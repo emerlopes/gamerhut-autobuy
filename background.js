@@ -27,7 +27,7 @@ function mutar(fn) {
     if (novo === undefined) return run;
     const jaProtegido = Boolean(run?.carrinhoProtegido && novo && run.productId === novo.productId);
     if (novo) {
-      // Proteção do carrinho é "monotônica" para o mesmo produto: só o Resetar desfaz.
+      // Proteção do carrinho é "monotônica" para o mesmo produto: só a Nova monitoração desfaz.
       novo.carrinhoProtegido = Boolean(jaProtegido || novo.carrinhoProtegido || PROTEGIDOS.has(novo.status));
       if (novo.carrinhoProtegido && !jaProtegido && !novo.carrinhoConfirmadoEm) {
         novo.carrinhoConfirmadoEm = Date.now();
@@ -192,9 +192,9 @@ async function iniciar(tabId) {
   if (run?.carrinhoProtegido && run.productId === config.productId) {
     await mutar((r) => comLog({ ...r, status: STATUS.ERRO_MANUAL },
       "O estado salvo diz que o produto já esteve no carrinho, mas o carrinho está vazio " +
-      "(pedido já feito? item removido?). Não vou comprar de novo. Use \"Resetar estado\" se tiver certeza.",
+      "(pedido já feito? item removido?). Não vou comprar de novo. Use \"Nova monitoração\" se tiver certeza.",
       "erro"));
-    return { ok: false, erro: "Produto já esteve no carrinho e sumiu. Veja o log; use Resetar estado se tiver certeza." };
+    return { ok: false, erro: "Produto já esteve no carrinho e sumiu. Veja a atividade; use Nova monitoração se tiver certeza." };
   }
 
   await mutar(() => comLog(
@@ -278,7 +278,7 @@ chrome.runtime.onMessage.addListener((msg, sender, responder) => {
 
       case "reset": {
         const { run } = await lerTudo();
-        if (run && ATIVOS.has(run.status)) return { ok: false, erro: "Pare a automação antes de resetar." };
+        if (run && ATIVOS.has(run.status)) return { ok: false, erro: "Pare a automação antes de iniciar uma nova monitoração." };
         await mutar(() => null);
         return { ok: true };
       }
