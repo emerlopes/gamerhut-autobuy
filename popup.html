@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GamerHut AutoBuy</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- =============================== Painel principal =============================== -->
+  <main id="viewPainel" class="view">
+    <header class="topo">
+      <img src="icons/icon48.png" alt="" class="logo" width="24" height="24">
+      <div class="topo-texto">
+        <h1>GamerHut AutoBuy</h1>
+        <p id="produtoNome" class="produto-nome">—</p>
+      </div>
+      <button id="abrirConfig" class="icone-btn" type="button" aria-label="Configurações" title="Configurações"></button>
+    </header>
+
+    <section id="hero" class="hero" aria-live="polite">
+      <div id="heroIcone" class="hero-icone" aria-hidden="true"></div>
+      <div class="hero-texto">
+        <h2 id="heroTitulo">—</h2>
+        <p id="heroSub">—</p>
+      </div>
+    </section>
+
+    <div id="tempo" class="tempo hidden">
+      <div class="tempo-linha">
+        <span id="tempoRotulo">Encerra em</span>
+        <strong id="tempoValor" class="num">--:--</strong>
+      </div>
+      <div class="barra" role="progressbar" aria-label="Tempo restante" aria-valuemin="0" aria-valuemax="100">
+        <div id="tempoBarra" class="barra-fill"></div>
+      </div>
+      <p id="tempoInfo" class="tempo-info">—</p>
+    </div>
+
+    <ol id="etapas" class="etapas" aria-label="Etapas"></ol>
+
+    <ul id="checklist" class="checklist hidden" aria-label="Antes de iniciar"></ul>
+
+    <div id="alerta" class="alerta hidden" role="alert">
+      <div id="alertaIcone" class="alerta-icone" aria-hidden="true"></div>
+      <div class="alerta-corpo">
+        <p id="alertaTexto"></p>
+        <div id="alertaAcoes" class="alerta-acoes"></div>
+      </div>
+    </div>
+
+    <button id="acaoPrincipal" class="btn btn-primario" type="button"></button>
+    <button id="acaoSecundaria" class="btn btn-fantasma hidden" type="button"></button>
+
+    <details id="atividade" class="atividade">
+      <summary>
+        <span>Atividade</span>
+        <span id="atividadeQtd" class="contador">0</span>
+      </summary>
+      <ol id="log" class="log"></ol>
+    </details>
+  </main>
+
+  <!-- ================================= Configurações ================================= -->
+  <main id="viewConfig" class="view hidden">
+    <header class="topo">
+      <button id="voltar" class="icone-btn" type="button" aria-label="Voltar" title="Voltar"></button>
+      <div class="topo-texto"><h1>Configurações</h1></div>
+    </header>
+
+    <p id="configBloqueada" class="nota hidden">Pare a automação para alterar as configurações.</p>
+
+    <form id="form" novalidate>
+      <fieldset class="grupo">
+        <legend>Produto</legend>
+        <div id="opcoesProduto" class="opcoes"></div>
+        <div id="urlCampo" class="campo hidden">
+          <label for="productUrl">URL do produto</label>
+          <input id="productUrl" type="url" placeholder="https://www.gamerhut.com.br/..." autocomplete="off">
+          <p class="ajuda">Use o link exato (com UTM, se houver). O ID do produto é detectado automaticamente.</p>
+        </div>
+      </fieldset>
+
+      <fieldset class="grupo">
+        <legend>Entrega</legend>
+        <div class="campo">
+          <label for="cep">CEP</label>
+          <input id="cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" maxlength="9">
+          <p id="cepErro" class="erro-campo hidden">Informe os 8 dígitos do CEP.</p>
+        </div>
+        <label class="switch-linha" for="prepararCheckout">
+          <span class="switch-texto">
+            <strong>Preparar o checkout automaticamente</strong>
+            <span class="ajuda">Após o carrinho: preenche o CEP, escolhe o 1º frete e abre “Finalizar compra”. O pagamento é sempre seu.</span>
+          </span>
+          <input id="prepararCheckout" type="checkbox" role="switch" class="switch">
+        </label>
+      </fieldset>
+
+      <fieldset class="grupo">
+        <legend>Monitoramento</legend>
+        <div class="duas-colunas">
+          <div class="campo">
+            <label for="pollSeconds">Atualizar a cada</label>
+            <div class="com-sufixo"><input id="pollSeconds" type="number" min="3" max="40" step="1"><span>seg</span></div>
+          </div>
+          <div class="campo">
+            <label for="maxMinutes">Parar após</label>
+            <div class="com-sufixo"><input id="maxMinutes" type="number" min="1" max="240" step="1"><span>min</span></div>
+          </div>
+        </div>
+        <p class="ajuda">O limite de tempo vale só até o produto entrar no carrinho.</p>
+      </fieldset>
+
+      <div class="rodape-form">
+        <button id="salvar" class="btn btn-primario" type="submit">Salvar</button>
+      </div>
+    </form>
+  </main>
+
+  <div id="toast" class="toast hidden" role="status"></div>
+
+  <script src="comum.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

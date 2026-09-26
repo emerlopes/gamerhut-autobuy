@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "GamerHut AutoBuy",
+  "version": "1.0.0",
+  "description": "Monitora a pré-venda na aba da Gamer Hut, adiciona ao carrinho e prepara o checkout. O pagamento é sempre manual.",
+  "permissions": ["storage", "tabs", "scripting", "alarms", "notifications"],
+  "host_permissions": ["https://www.gamerhut.com.br/*", "https://gamerhut.com.br/*"],
+  "background": { "service_worker": "background.js" },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "GamerHut AutoBuy",
+    "default_icon": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+  },
+  "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "content_scripts": [
+    {
+      "matches": ["https://www.gamerhut.com.br/*", "https://gamerhut.com.br/*"],
+      "js": ["comum.js", "content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
