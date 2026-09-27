@@ -100,7 +100,9 @@ function estadoHero() {
         sub: run?.frete ? `Frete: ${run.frete}` : "Clicando em Finalizar compra…" };
     case ST.ERRO_RECUPERAVEL:
       return { tom: "andamento", icone: "reset", pulso: 1, titulo: "Tentando de novo",
-        sub: "Houve um erro no checkout. O produto continua no seu carrinho." };
+        sub: protegido()
+          ? "Houve um erro no checkout. O produto continua no seu carrinho."
+          : "Houve um erro. A extensão continua tentando até você clicar em Parar." };
     case ST.AGUARDANDO_USUARIO:
       return { tom: "sucesso", icone: "pronto", titulo: "Sua vez: conclua o pagamento",
         sub: cfg.prepararCheckout
@@ -153,7 +155,7 @@ function renderEtapas() {
     feitas = 2 + (e.cep ? 1 : 0) + (e.frete ? 1 : 0);
     atual = feitas;
     erro = s === ST.ERRO_MANUAL || s === ST.ERRO_RECUPERAVEL;
-  } else if (s === ST.ERRO_MANUAL || s === ST.TEMPO_ESGOTADO) {
+  } else if (s === ST.ERRO_MANUAL || s === ST.TEMPO_ESGOTADO || s === ST.ERRO_RECUPERAVEL) {
     atual = 0;
     erro = true;
   }
@@ -211,7 +213,9 @@ function renderAlerta() {
     acoes.push({ id: "aba", icone: "aba", rot: "Ir para a aba" });
   } else if (s === ST.ERRO_RECUPERAVEL) {
     tom = "andamento";
-    texto = `${run.ultimoErro || "Erro no checkout"} (tentativa ${run.tentativasCheckout || 1} de ${cfg.maxTentativasCheckout}).`;
+    texto = protegido() && run.tentativasCheckout
+      ? `${run.ultimoErro || "Erro no checkout"} (tentativa ${run.tentativasCheckout}).`
+      : `${run.ultimoErro || "Erro"}.`;
   } else if (s === ST.PARADO && protegido()) {
     tom = "andamento";
     texto = "Se você já concluiu o pedido, não clique em Continuar.";

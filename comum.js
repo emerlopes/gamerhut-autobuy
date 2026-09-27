@@ -27,8 +27,6 @@ globalThis.GH = globalThis.GH || (() => {
     pollSeconds: 10,
     maxMinutes: 30,
     prepararCheckout: true,
-    maxTentativasCompra: 5,
-    maxTentativasCheckout: 5,
     freteTimeoutSeconds: 25,
     exigirLogin: true, // só para testes: false permite rodar sem sessão
   };

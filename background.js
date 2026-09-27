@@ -239,11 +239,6 @@ async function verificarSaude() {
   const semResposta = Date.now() - (run.heartbeat || 0);
   if (semResposta < HEARTBEAT_LIMITE_MS) return;
 
-  if ((run.recuperacoes || 0) >= 10) {
-    await mutar((r) => comLog({ ...r, status: STATUS.ERRO_MANUAL },
-      "A aba parou de responder várias vezes. Automação parada; continue manualmente.", "erro"));
-    return;
-  }
   // Depois do carrinho (ou com clique pendente) a recuperação é SEMPRE pelo carrinho.
   const destino = run.carrinhoProtegido || run.status === STATUS.ADICIONANDO_AO_CARRINHO
     ? URLS.carrinho : run.productUrl;

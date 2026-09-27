@@ -111,6 +111,8 @@
         return ir(URLS.carrinho);
       }
       run = await patch({ status: STATUS.MONITORANDO }, "Produto não está no carrinho; retomando o monitoramento", "aviso");
+    } else if (run.status === STATUS.ERRO_RECUPERAVEL) {
+      run = await patch({ status: STATUS.MONITORANDO, ultimoErro: null }, "Retomando o monitoramento");
     }
 
     if (Date.now() > run.prazo) {
@@ -146,14 +148,10 @@
         return ir(URLS.carrinho);
       }
     }
-    if ((run.tentativasCompra || 0) >= cfg.maxTentativasCompra) {
-      await patch({ status: STATUS.ERRO_MANUAL },
-        `Não consegui colocar o produto no carrinho após ${cfg.maxTentativasCompra} tentativas`, "erro");
-      return;
-    }
-
-    await patch({ status: STATUS.ADICIONANDO_AO_CARRINHO, tentativasCompra: (run.tentativasCompra || 0) + 1 },
-      "Botão Comprar encontrado; clicando");
+    // Sem limite de tentativas: segue até o usuário parar. O carrinho real é conferido antes de cada clique.
+    const tentativa = (run.tentativasCompra || 0) + 1;
+    await patch({ status: STATUS.ADICIONANDO_AO_CARRINHO, tentativasCompra: tentativa },
+      tentativa > 1 ? `Botão Comprar encontrado; clicando (tentativa ${tentativa})` : "Botão Comprar encontrado; clicando");
     checarAbortado();
     d.botao.click();
     // Se não navegar ao carrinho em 15s, recarrega: o estado ADICIONANDO força conferir o carrinho.
@@ -200,7 +198,7 @@
           "Produto NÃO está mais no carrinho. Não vou clicar em Comprar de novo; verifique manualmente.", "erro");
         return;
       }
-      if (qtd > 1) return reduzirParaUm(cfg);
+      if (qtd > 1) return await reduzirParaUm(cfg);
       await patch({}, "Produto continua no carrinho (qtd 1)");
 
       // CEP
@@ -234,15 +232,10 @@
       agendarRecarga(25, URLS.carrinho);
     } catch (e) {
       if (e instanceof Abortado) return;
+      // Sem limite de tentativas: segue até o usuário parar, com espera crescente (máx. 10s).
       const t = (run.tentativasCheckout || 0) + 1;
-      if (t >= cfg.maxTentativasCheckout) {
-        await patch({ status: STATUS.ERRO_MANUAL, tentativasCheckout: t, ultimoErro: e.message },
-          `Erro no checkout: ${e.message}. Limite de tentativas atingido. Produto continua no carrinho; continue manualmente.`, "erro")
-          .catch(() => {});
-        return;
-      }
       await patch({ status: STATUS.ERRO_RECUPERAVEL, tentativasCheckout: t, ultimoErro: e.message },
-        `Erro no checkout (tentativa ${t}/${cfg.maxTentativasCheckout}): ${e.message}. Produto continua protegido; recarregando o carrinho.`,
+        `Erro no checkout (tentativa ${t}): ${e.message}. Produto continua protegido; recarregando o carrinho.`,
         "erro").catch(() => {});
       agendarRecarga(Math.min(2 * t, 10), URLS.carrinho);
     }
@@ -296,11 +289,24 @@
       "Checkout aberto. Produto no carrinho e checkout preparado. Assuma a aba para concluir o pagamento.");
   }
 
-  async function paginaLogin(run) {
-    await patch({ status: STATUS.ERRO_MANUAL },
+  // Sessão caiu: espera o login em vez de parar. Não recarrega a página (o usuário pode estar digitando);
+  // confere a sessão a cada 5s e o patch mantém o cão de guarda quieto.
+  async function paginaLogin(run, cfg) {
+    await patch({ status: STATUS.ERRO_RECUPERAVEL, ultimoErro: "A loja pediu login. Faça login nesta aba" },
       run.carrinhoProtegido
-        ? "A loja pediu login. O carrinho está preservado: faça login nesta aba e siga manualmente."
-        : "Sessão expirada. Faça login e clique em Iniciar de novo.", "erro");
+        ? "A loja pediu login. O carrinho está preservado: faça login nesta aba e a automação continua sozinha."
+        : "Sessão expirada. Faça login nesta aba e a automação continua sozinha.", "aviso");
+    for (;;) {
+      await esperar(5000);
+      checarAbortado();
+      if (await GH.sessaoAutenticada().catch(() => false)) {
+        const destino = run.carrinhoProtegido ? URLS.carrinho : cfg.productUrl;
+        await patch({ status: run.carrinhoProtegido ? STATUS.PRODUTO_NO_CARRINHO : STATUS.MONITORANDO, ultimoErro: null },
+          `Login detectado; voltando ${run.carrinhoProtegido ? "ao carrinho" : "ao produto"}`);
+        return ir(destino);
+      }
+      await patch({});
+    }
   }
 
   async function outraPagina(run, cfg) {

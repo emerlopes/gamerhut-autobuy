@@ -178,7 +178,16 @@ Para interromper a qualquer momento, clique em **Parar**. A aba fica exatamente 
 - Quando o checkout fica pronto e é a sua vez de pagar.
 - Quando o tempo limite acaba sem o produto liberar (padrão 30 min). Esse limite só vale **antes** do carrinho.
 - Quando você fecha a aba monitorada ou reinicia o navegador.
-- Quando algo sai do esperado e ela precisa de você. O painel mostra o motivo.
+- Quando o produto estava no carrinho e sumiu (você já fez o pedido? removeu o item?). É a proteção contra compra duplicada.
+
+### Quando dá erro, ela continua
+
+Erros durante a execução **não param a extensão**: ela tenta de novo sozinha, sem limite de tentativas, até dar certo ou até você clicar em **Parar**. Enquanto isso, o painel mostra **"Tentando de novo"** e o selo fica `ERR` em laranja.
+
+- **Não conseguiu colocar no carrinho:** confere o carrinho real e, se o produto não estiver lá, volta ao produto e clica em Comprar de novo.
+- **Erro no CEP, no frete ou no Finalizar compra:** recarrega o carrinho e refaz o checkout, esperando um pouco mais a cada tentativa (até 10 s).
+- **Página travou ou a internet caiu:** a cada 30 s ela confere e recarrega no ponto seguro.
+- **A loja pediu login:** ela espera na página de login sem recarregar. Faça login nessa aba e a automação continua de onde parou.
 
 ---
 
@@ -208,7 +217,8 @@ O selo em cima do ícone resume o status:
 | `CART`                | Produto no carrinho                              |
 | `CEP` / `FRT` / `FIN` | Preenchendo CEP, escolhendo frete, finalizando   |
 | `OK`                  | Checkout pronto: é a sua vez de pagar            |
-| `ERR`                 | Algo deu errado. Abra o painel para ver o motivo |
+| `ERR` (laranja)       | Deu erro, tentando de novo sozinha               |
+| `ERR` (vermelho)      | Parou e precisa de você. Abra o painel           |
 | `30m`                 | Tempo limite atingido sem o produto liberar      |
 
 Botões que podem aparecer:
@@ -227,7 +237,7 @@ A extensão foi feita para **nunca comprar duas vezes** e nunca fazer nada que v
 
 - **Pagamento manual, sempre.** Ela para na tela de Finalizar compra.
 - **Sem compra duplicada.** Antes de clicar em Comprar, ela lê o seu carrinho real. Se o produto já estiver lá, não clica.
-- **Carrinho protegido.** Depois que o produto entra no carrinho, ela nunca volta a monitorar nem clica em Comprar de novo. Problemas com CEP ou frete são resolvidos recarregando o carrinho (até 5 tentativas). Se não der, ela para e pede sua ajuda.
+- **Carrinho protegido.** Depois que o produto entra no carrinho, ela nunca volta a monitorar nem clica em Comprar de novo. Problemas com CEP ou frete são resolvidos recarregando o carrinho, sem limite de tentativas, até dar certo ou você clicar em Parar.
 - **Não recompra.** Se o produto esteve no carrinho e depois sumiu (você já fez o pedido? removeu o item?), ela não compra de novo. Só a **Nova monitoração**, com confirmação, libera um novo ciclo.
 - **Recuperação automática.** Se a página travar ou a internet cair, a cada 30 s ela confere e recarrega no ponto seguro: a página do produto antes do carrinho, o carrinho depois.
 - **Nunca fecha a sua aba.**
@@ -253,6 +263,9 @@ Em `chrome://extensions`, clique em **Remover** no card da extensão. Depois pod
 
 **"Sessão não detectada: faça login na Gamer Hut…"**
 Você não está logado na loja. Entre na sua conta na mesma janela do navegador e clique em Iniciar de novo.
+
+**O painel mostra "Tentando de novo" há muito tempo.**
+Abra **Atividade** para ver o erro que se repete. A extensão não desiste sozinha: se o erro não se resolver (por exemplo, um CEP que a loja não aceita), clique em **Parar**, corrija e inicie de novo.
 
 **O botão Iniciar está desabilitado.**
 Falta configurar o CEP. Abra a engrenagem, informe os 8 dígitos e salve.
